@@ -1,5 +1,6 @@
 ## 0.3.1
 
+- First CRAN release
 - Fixed issue when init interrupted
 - Turn on Packrat cache for Mac and Linux
 
