@@ -18,7 +18,7 @@ Inspired by [Yarn](https://yarnpkg.com/), [Bundler](https://bundler.io/), and [P
 Install Jetpack
 
 ```r
-install.packages("jetpack")
+devtools::install_github("datasnakes/jetpack")
 ```
 
 ## How It Works
