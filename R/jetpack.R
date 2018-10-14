@@ -179,7 +179,7 @@ updateDesc <- function(packages, remotes) {
 
 #' @importFrom utils packageVersion
 version <- function() {
-  message(paste0("Jetpack version ", packageVersion("jetpack")))
+  message(paste0("Jetpack version ", utils::packageVersion("jetpack")))
 }
 
 warn <- function(msg) {
@@ -460,7 +460,8 @@ cli <- function(file = NULL) {
     message(paste0("Be sure to add '", windowsPath(dir), "' to your PATH"))
   } else {
     if (is.null(file)) {
-      file <- "/usr/local/bin/jetpack"
+      user_home <- Sys.getenv('HOME')
+      file <- paste0(user_home, "/bin/jetpack")
     }
     write("#!/usr/bin/env Rscript\n\nlibrary(methods)\njetpack::run()", file = file)
     Sys.chmod(file, "755")
@@ -475,10 +476,6 @@ cli <- function(file = NULL) {
 run <- function() {
   sandbox({
     doc <- "Usage:
-    jetpack [install] [--deployment]
-    jetpack check
-    jetpack info <package>
-    jetpack search <query>
     jetpack version
     jetpack help
     jetpack global add <package>... [--remote=<remote>]...
@@ -513,14 +510,6 @@ run <- function() {
         } else {
           globalList()
         }
-      } else if (opts$init) {
-        init()
-      } else if (opts$add) {
-        add(opts$package, opts$remote)
-      } else if (opts$remove) {
-        remove(opts$package, opts$remote)
-      } else if (opts$update) {
-        update(opts$package, opts$remote)
       } else if (opts$check) {
         if (!check()) {
           quit(status = 1)
@@ -546,14 +535,10 @@ run <- function() {
 
 sandbox <- function(code) {
   libs <- c("jsonlite", "withr", "devtools", "httr", "curl", "git2r", "desc", "docopt")
-  invisible(with_extlib(libs))
-}
-
-with_extlib <- function(libs) {
-  if (!is.element(libs, installed.packages()[, 1])) {
-    print(paste("Package:", libs, "Not found, Installing Now..."))
-    install.packages(libs, dep = TRUE)
+  if (!interactive()) {
+    suppressMessages(packrat::extlib(libs))
+    invisible(eval(code))
+  } else {
+    invisible(packrat::with_extlib(libs, code))
   }
-  print(paste("Loading Package :", libs))
-  require(libs, character.only = TRUE)
 }
